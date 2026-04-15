@@ -1,0 +1,51 @@
+# OBP Empirical Bayes Pipeline
+
+This project builds a full data + modeling workflow for player OBP prediction with a
+logistic-normal empirical Bayes model.
+
+## What it does
+
+- Pulls seasonal batting and pitching data from `pybaseball`
+- Computes batter-season context features:
+  - park factor
+  - average pitcher FIP faced (PA-weighted via Statcast PA events)
+  - batter profile features (`K%`, `GB%`, `Age`)
+  - optional season dummy covariates
+- Fits a PyMC logistic-normal empirical Bayes model:
+  - `Y_i ~ Binomial(n_i, p_i)`
+  - `logit(p_i) = X_i beta + epsilon_i`
+  - `epsilon_i ~ Normal(0, tau^2)`
+- Saves posterior OBP estimates and diagnostics artifacts
+
+## Install
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+## Run
+
+```bash
+python run_pipeline.py \
+  --start-season 2018 \
+  --end-season 2023 \
+  --min-qual-pa 50 \
+  --min-model-pa 100 \
+  --draws 2000 \
+  --tune 1000 \
+  --chains 4 \
+  --target-accept 0.95 \
+  --output-dir outputs
+```
+
+## Outputs
+
+In `outputs/`:
+
+- `modeling_dataset.csv` - final modeled rows and engineered features
+- `obp_posterior_estimates.csv` - posterior means/intervals for OBP
+- `beta_summary.csv` - coefficient posterior summary
+- `model_summary.csv` - top-level parameter diagnostics
+- `obp_trace.nc` - saved PyMC posterior trace

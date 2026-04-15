@@ -1,0 +1,8 @@
+pybaseball
+pymc
+pytensor
+pandas
+numpy
+scipy
+arviz
+requests
